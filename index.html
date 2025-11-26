@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" type="text/css" href="/src/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>crossword</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <template id="word-list">
+  <table class="word-list">
+    <thead>
+      <tr>
+        <th>Слово</th>
+        <th>Описание</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr></tr>
+    </tbody>
+  </table>
+</template>
+
+<template id="table-row">
+  <tr>
+    <td class="word">%word</td>
+    <td>%description</td>
+    <td><button class="remove">х</button></td>
+  </tr>
+</template>
+
+<template id="add-form">
+  <form class="add-word">
+    <input type="text" name="word" placeholder="Новое слово">
+    <input type="text" name="description" placeholder="Описание">
+    <button type="submit">Добавить</button>
+  </form>
+</template>
+
+  <div id="grid-container" style="display: none;">
+    <table id="grid" class="grid"></table>
+  </div>
+  <button id="export-pdf">Экспорт в PDF</button>
+  <div id="placement-modal" class="modal" style="display: none;">
+    <div class="modal-content"></div>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+.word-list {
+  td, th {
+    font-size: 24px;
+    padding: 4px 8px;
+  }
+  th:first-child {
+    width: 200px;
+  }
+  th:nth-child(2) {
+    width: 400px;
+  }
+  th {
+    text-align: left;
+    background-color: #d8dee9;
+  }
+  td {
+    padding: 4px 8px;
+  }
+  tr:nth-child(even) td {
+    background-color: #d8dee9;
+  }
+
+  td.remove {
+    cursor: pointer;
+    &:hover {
+      background-color: #bf616a;
+    }
+  }
+}
+
+.add-word {
+  input {
+    font-size: 24px;
+  }
+  input[name='word'] {
+    width: 200px;
+  }
+  input[name='description'] {
+    width: 400px;
+  }
+}
+
+#grid-container {
+      margin: 20px 0;
+    }
+    #grid {
+      border-collapse: collapse;
+      margin: 0 auto;
+      border: 2px solid #333;
+    }
+    #grid td {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ccc;
+      text-align: center;
+      vertical-align: middle;
+      background: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    #grid td.filled {
+      background: #f0f8ff; /* Синий оттенок для заполненных */
+    }
+    #grid td.black {
+      background: #000; /* Чёрные клетки, если нужно */
+    }
+    .tab.active {
+      background: #e0e0e0;
+      font-weight: bold;
+    }
+
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: white; padding: 20px; border-radius: 8px; min-width: 300px; }
+.modal-content label { display: block; margin: 10px 0 5px; }
+.modal-content input { width: 100%; padding: 5px; margin-bottom: 10px; }
+.modal-content button { margin: 5px; padding: 8px 16px; }
