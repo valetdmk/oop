@@ -2,12 +2,9 @@ import './style.css';
 import { elementMethods } from './baseline.js';
 import { renderAddForm, renderWordList } from './renderers.js';
 import { WordList } from './wordlist.js';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 const { first } = elementMethods();
 const root = first("#root");
-const exportBtn = first("#export-pdf");
 const gridContainer = first("#grid-container");
 const placementModal = first("#placement-modal");
 
@@ -20,12 +17,13 @@ root.innerHTML = `
 
 const app = root.first("#app");
 
-// gridBtn
 const gridBtn = document.createElement('button');
 gridBtn.id = 'grid-btn';
 gridBtn.textContent = 'Grid';
 gridBtn.style.margin = '10px';
 app.appendChild(gridBtn);
+
+let currentPosition = { row: 0, col: 0 };
 
 const generateGrid = () => {
   const grid = first("#grid");
@@ -39,84 +37,102 @@ const generateGrid = () => {
       cell.classList.add('cell');
       cell.contentEditable = false;
       cell.textContent = '';
+
+      cell.addEventListener('click', (e) => {
+        const clickedCell = e.target;
+        currentPosition.row = Array.from(realGrid.rows).indexOf(clickedCell.parentElement);
+        currentPosition.col = Array.from(clickedCell.parentElement.children).indexOf(clickedCell);
+        openPlacementModal();
+      });
     }
   }
 };
 
-const gridTable = first("#grid");
-gridTable.on('click', () => {
-  openPlacementModal();
-});
-
 const openPlacementModal = () => {
-  // Модифицируем контент модалки для 2 инпутов
+  const grid = first("#grid").el;
+  const startRow = currentPosition.row;
+  const startCol = currentPosition.col;
+  const isFilled = grid.rows[startRow].cells[startCol].textContent !== '';
+
+  let horizontalWord = '';
+  let verticalWord = '';
+
+  if (isFilled) {
+    for (let j = startCol; j < 10; j++) {
+      const cellText = grid.rows[startRow].cells[j].textContent;
+      if (cellText === '') break;
+      horizontalWord += cellText;
+    }
+
+    for (let i = startRow; i < 10; i++) {
+      const cellText = grid.rows[i].cells[startCol].textContent;
+      if (cellText === '') break;
+      verticalWord += cellText;
+    }
+  }
+
   placementModal.el.innerHTML = `
     <div class="modal-content">
       <h1>Заполнить сетку</h1>
       <label>Горизонтальное слово:</label>
-      <input type="text" id="horizontal-input" placeholder="Введите горизонтальное слово" maxlength="10">
+      <input type="text" id="horizontal-input" placeholder="Введите горизонтальное слово" value="${horizontalWord}">
       <label>Вертикальное слово:</label>
-      <input type="text" id="vertical-input" placeholder="Введите вертикальное слово" maxlength="10">
+      <input type="text" id="vertical-input" placeholder="Введите вертикальное слово" value="${verticalWord}">
       <button id="save-words">Сохранить</button>
       <button id="cancel-place">Отмена</button>
     </div>
   `;
   placementModal.el.style.display = 'block';
 
-  // Обработчик "Сохранить" (динамически, после innerHTML)
   const saveBtn = placementModal.el.querySelector('#save-words');
   saveBtn.addEventListener('click', () => {
-    const horizontalWord = placementModal.el.querySelector('#horizontal-input').value.trim().toUpperCase();
-    const verticalWord = placementModal.el.querySelector('#vertical-input').value.trim().toUpperCase();
+    const horizontalWordNew = placementModal.el.querySelector('#horizontal-input').value.trim().toUpperCase();
+    const verticalWordNew = placementModal.el.querySelector('#vertical-input').value.trim().toUpperCase();
 
-    if (!horizontalWord || !verticalWord) {
-      alert('Введите оба слова!');
-      return;
-    }
-    if (horizontalWord.length > 10 || verticalWord.length > 10) {
-      alert('Слова не длиннее 10 букв!');
-      return;
-    }
-
-    // Простая проверка пересечения: первая буква вертикального должна совпадать с буквой в позиции пересечения горизонтального
-    // Размещаем горизонт в row 0, col 0; вертик в row 0, col 0 (пересечение в (0,0))
-    if (horizontalWord[0] !== verticalWord[0]) {
-      alert('Буквы в точке пересечения не совпадают! (Первая буква обоих слов должна быть одинаковой)');
-      return;
-    }
-
-    fillGrid(horizontalWord, verticalWord);
+    placeWords(horizontalWordNew, verticalWordNew);
     placementModal.el.style.display = 'none';
   });
 
-  // Обработчик "Отмена"
   const cancelBtn = placementModal.el.querySelector('#cancel-place');
   cancelBtn.addEventListener('click', () => {
     placementModal.el.style.display = 'none';
   });
 };
 
-// Функция заполнения grid
-const fillGrid = (horizontalWord, verticalWord) => {
+const placeWords = (horizontalWord, verticalWord) => {
   const grid = first("#grid").el;
-  clearGrid();  // Очистка перед заполнением
+  const startRow = currentPosition.row;
+  const startCol = currentPosition.col;
 
-  // Размещение горизонтального слова в row 0, начиная с col 0
-  for (let j = 0; j < horizontalWord.length; j++) {
-    grid.rows[0].cells[j].textContent = horizontalWord[j];
+  if (horizontalWord === '') {
+    // Очистка вправо от startCol до пустой ячейки
+    for (let j = startCol; j < 10; j++) {
+      const cell = grid.rows[startRow].cells[j];
+      if (cell.textContent === '') break;
+      cell.textContent = '';
+      cell.classList.remove('filled');
+    }
+  } else if (horizontalWord) {
+    for (let j = 0; j < horizontalWord.length && startCol + j < 10; j++) {
+      const cell = grid.rows[startRow].cells[startCol + j];
+      cell.textContent = horizontalWord[j];
+      cell.classList.add('filled');
+    }
   }
 
-  // Размещение вертикального слова в col 0, начиная с row 0
-  for (let i = 0; i < verticalWord.length; i++) {
-    grid.rows[i].cells[0].textContent = verticalWord[i];
-  }
-};
-
-const clearGrid = () => {
-  const grid = first("#grid").el;
-  for (let i = 0; i < 10; i++) {
-    for (let j = 0; j < 10; j++) {
-      grid.rows[i].cells[j].textContent = '';
+  if (verticalWord === '') {
+    // Очистка вниз от startRow до пустой ячейки
+    for (let i = startRow; i < 10; i++) {
+      const cell = grid.rows[i].cells[startCol];
+      if (cell.textContent === '') break;
+      cell.textContent = '';
+      cell.classList.remove('filled');
+    }
+  } else if (verticalWord) {
+    for (let i = 0; i < verticalWord.length && startRow + i < 10; i++) {
+      const cell = grid.rows[startRow + i].cells[startCol];
+      cell.textContent = verticalWord[i];
+      cell.classList.add('filled');
     }
   }
 };
@@ -130,10 +146,6 @@ gridBtn.addEventListener('click', () => {
     gridContainer.el.style.display = 'none';
     gridBtn.textContent = 'Grid';
   }
-});
-
-exportBtn.on('click', () => {
-  
 });
 
 const wl = new WordList();
