@@ -39,11 +39,14 @@ const generateGrid = () => {
       cell.textContent = '';
 
       cell.addEventListener('click', (e) => {
-        const clickedCell = e.target;
-        currentPosition.row = Array.from(realGrid.rows).indexOf(clickedCell.parentElement);
-        currentPosition.col = Array.from(clickedCell.parentElement.children).indexOf(clickedCell);
-        openPlacementModal();
-      });
+  const td = e.currentTarget; // ВСЕГДА TD
+  const tr = td.parentElement;
+
+  currentPosition.row = tr.rowIndex;
+  currentPosition.col = td.cellIndex;
+
+  openPlacementModal();
+});
     }
   }
 };
@@ -104,15 +107,25 @@ const placeWords = (horizontalWord, verticalWord) => {
   const startRow = currentPosition.row;
   const startCol = currentPosition.col;
 
-  if (horizontalWord === '') {
-    // Очистка вправо от startCol до пустой ячейки
+  horizontalWord = (horizontalWord || '').toUpperCase();
+  verticalWord = (verticalWord || '').toUpperCase();
+
+  //
+  // ====== ГОРИЗОНТАЛЬ ======
+  //
+  if (horizontalWord.length > 0) {
+    // 1. Очистить старые буквы вправо, пока они есть (не трогаем пересечения)
     for (let j = startCol; j < 10; j++) {
       const cell = grid.rows[startRow].cells[j];
-      if (cell.textContent === '') break;
-      cell.textContent = '';
-      cell.classList.remove('filled');
+      if (cell.textContent === '') break;       // дошли до пустой — стоп
+      if (j - startCol >= horizontalWord.length) {
+        // за пределами нового слова — очищаем
+        cell.textContent = '';
+        cell.classList.remove('filled');
+      }
     }
-  } else if (horizontalWord) {
+
+    // 2. Записать новое слово
     for (let j = 0; j < horizontalWord.length && startCol + j < 10; j++) {
       const cell = grid.rows[startRow].cells[startCol + j];
       cell.textContent = horizontalWord[j];
@@ -120,15 +133,22 @@ const placeWords = (horizontalWord, verticalWord) => {
     }
   }
 
-  if (verticalWord === '') {
-    // Очистка вниз от startRow до пустой ячейки
+
+  //
+  // ====== ВЕРТИКАЛЬ ======
+  //
+  if (verticalWord.length > 0) {
+    // 1. Очистить старые буквы вниз
     for (let i = startRow; i < 10; i++) {
       const cell = grid.rows[i].cells[startCol];
       if (cell.textContent === '') break;
-      cell.textContent = '';
-      cell.classList.remove('filled');
+      if (i - startRow >= verticalWord.length) {
+        cell.textContent = '';
+        cell.classList.remove('filled');
+      }
     }
-  } else if (verticalWord) {
+
+    // 2. Записать новое слово
     for (let i = 0; i < verticalWord.length && startRow + i < 10; i++) {
       const cell = grid.rows[startRow + i].cells[startCol];
       cell.textContent = verticalWord[i];
@@ -136,6 +156,8 @@ const placeWords = (horizontalWord, verticalWord) => {
     }
   }
 };
+
+
 
 gridBtn.addEventListener('click', () => {
   if (gridContainer.el.style.display === 'none' || gridContainer.el.style.display === '') {
