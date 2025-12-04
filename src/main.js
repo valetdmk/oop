@@ -110,22 +110,16 @@ const placeWords = (horizontalWord, verticalWord) => {
   horizontalWord = (horizontalWord || '').toUpperCase();
   verticalWord = (verticalWord || '').toUpperCase();
 
-  //
-  // ====== ГОРИЗОНТАЛЬ ======
-  //
   if (horizontalWord.length > 0) {
-    // 1. Очистить старые буквы вправо, пока они есть (не трогаем пересечения)
     for (let j = startCol; j < 10; j++) {
       const cell = grid.rows[startRow].cells[j];
-      if (cell.textContent === '') break;       // дошли до пустой — стоп
+      if (cell.textContent === '') break;
       if (j - startCol >= horizontalWord.length) {
-        // за пределами нового слова — очищаем
         cell.textContent = '';
         cell.classList.remove('filled');
       }
     }
 
-    // 2. Записать новое слово
     for (let j = 0; j < horizontalWord.length && startCol + j < 10; j++) {
       const cell = grid.rows[startRow].cells[startCol + j];
       cell.textContent = horizontalWord[j];
@@ -133,12 +127,7 @@ const placeWords = (horizontalWord, verticalWord) => {
     }
   }
 
-
-  //
-  // ====== ВЕРТИКАЛЬ ======
-  //
   if (verticalWord.length > 0) {
-    // 1. Очистить старые буквы вниз
     for (let i = startRow; i < 10; i++) {
       const cell = grid.rows[i].cells[startCol];
       if (cell.textContent === '') break;
@@ -148,7 +137,6 @@ const placeWords = (horizontalWord, verticalWord) => {
       }
     }
 
-    // 2. Записать новое слово
     for (let i = 0; i < verticalWord.length && startRow + i < 10; i++) {
       const cell = grid.rows[startRow + i].cells[startCol];
       cell.textContent = verticalWord[i];
